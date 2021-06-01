@@ -1,5 +1,5 @@
 /*
-Package example provided support for Hadoop Distributed File System (HDFS).
+Package hdfs provided support for Hadoop Distributed File System (HDFS).
 */
 package hdfs
 

@@ -1,4 +1,4 @@
-module github.com/beyondstorage/go-service-example
+module github.com/beyondstorage/go-service-hdfs
 
 go 1.15
 
