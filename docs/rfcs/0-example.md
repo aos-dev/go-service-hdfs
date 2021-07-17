@@ -6,10 +6,10 @@
 # RFC-0:
 
 - Updates: (delete this part if not applicable)
-  - [GSP-20](https://github.com/beyondstorage/go-service-hdfs/blob/master/docs/rfcs/20-abc): Deletes something
+  - [RFC-20](https://github.com/beyondstorage/go-service-hdfs/blob/master/docs/rfcs/20-abc): Deletes something
 - Updated By: (delete this part if not applicable)
-  - [GSP-10](https://github.com/beyondstorage/go-service-hdfs/blob/master/docs/rfcs/10-do-be-do-be-do): Adds something
-  - [GSP-1000](https://github.com/beyondstorage/go-service-hdfs/blob/master/docs/rfcs/1000-lalala): Deprecates this RFC
+  - [RFC-10](https://github.com/beyondstorage/go-service-hdfs/blob/master/docs/rfcs/10-do-be-do-be-do): Adds something
+  - [RFC-1000](https://github.com/beyondstorage/go-service-hdfs/blob/master/docs/rfcs/1000-lalala): Deprecates this RFC
 
 ## Background
 
@@ -39,4 +39,3 @@ Possible content:
 ## Implementation
 
 Explain what steps should be done to implement this proposal.
-
