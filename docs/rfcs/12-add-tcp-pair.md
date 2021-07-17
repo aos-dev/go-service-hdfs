@@ -1,11 +1,11 @@
 - Author: bokket  [bokkett@gmail.com](mailto:bokkett@gmail.com)
 - Start Date: 2021-07-17
-- RFC PR: [beyondstorage/go-service-hdfs#11](https://github.com/beyondstorage/go-service-hdfs/pull/11)
-- Tracking Issue: [beyondstorage/go-service-hdfs#11](https://github.com/beyondstorage/go-service-hdfs/issues/11)
+- RFC PR: [beyondstorage/go-service-hdfs#12](https://github.com/beyondstorage/go-service-hdfs/pull/12)
+- Tracking Issue: [https://github.com/beyondstorage/go-endpoint/issues/7](https://github.com/beyondstorage/go-endpoint/issues/7)
 
 # RFC-11: Add Tcp pair
 
-Releated issue: [beyondstorage/go-service-hdfs#11](https://github.com/beyondstorage/go-service-hdfs/issues/11)
+Releated issue: [https://github.com/beyondstorage/go-endpoint/issues/7](https://github.com/beyondstorage/go-endpoint/issues/7)
 
 ## Background
 
