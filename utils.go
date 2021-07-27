@@ -3,14 +3,16 @@ package hdfs
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/beyondstorage/go-endpoint"
 	ps "github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/services"
 	"github.com/beyondstorage/go-storage/v4/types"
+
 	"github.com/colinmarc/hdfs"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 // Storage is the example client.

@@ -3,12 +3,12 @@ package hdfs
 import (
 	"context"
 	"errors"
-	"github.com/beyondstorage/go-storage/v4/pkg/iowrap"
-	"github.com/beyondstorage/go-storage/v4/services"
 	"io"
 	"os"
 	path2 "path"
 
+	"github.com/beyondstorage/go-storage/v4/pkg/iowrap"
+	"github.com/beyondstorage/go-storage/v4/services"
 	. "github.com/beyondstorage/go-storage/v4/types"
 )
 
