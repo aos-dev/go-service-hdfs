@@ -1,5 +1,7 @@
 SHELL := /bin/bash
 
+-include Makefile.env.example
+
 .PHONY: all check format lint build test generate tidy
 
 help:
