@@ -27,10 +27,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 		// ref: [GSP-46](https://github.com/beyondstorage/specs/blob/master/rfcs/46-idempotent-delete.md)
 		err = nil
 	}
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
@@ -70,25 +67,25 @@ func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
 
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
 	rp := s.getAbsPath(path)
-	file, err := s.hdfs.Open(rp)
+	f, err := s.hdfs.Open(rp)
 	if err != nil {
 		return 0, err
 	}
 	if opt.HasOffset {
-		_, err = file.Seek(opt.Offset, 0)
+		_, err = f.Seek(opt.Offset, 0)
 		if err != nil {
 			return 0, err
 		}
 	}
 
 	var rc io.Reader
-	rc = file
+	rc = f
 
 	if opt.HasIoCallback {
 		rc = iowrap.CallbackReader(rc, opt.IoCallback)
 	}
 
-	return io.Copy(w, rc)
+	return io.Copy(w, f)
 }
 
 func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
@@ -133,21 +130,18 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 			err = nil
 		}
 	}
-	var f io.Writer
-	filewrite, err := s.hdfs.Create(rp)
+
+	f, err := s.hdfs.Create(rp)
 	if err != nil {
 		return 0, err
 	}
-	f = filewrite
+	defer func() {
+		err = f.Close()
+	}()
+
 	if opt.HasIoCallback {
 		r = iowrap.CallbackReader(r, opt.IoCallback)
 	}
 
-	n, err = io.CopyN(f, r, size)
-	if err != nil {
-		return 0, err
-	}
-	filewrite.Flush()
-	filewrite.Close()
-	return n, nil
+	return io.CopyN(f, r, size)
 }
