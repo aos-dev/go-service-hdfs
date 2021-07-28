@@ -21,12 +21,6 @@ const Type = "hdfs"
 
 // ObjectSystemMetadata stores system metadata for object.
 type ObjectSystemMetadata struct {
-	// LastModified modification time
-	LastModified time.Time
-	// ObjectMode file mode bits
-	ObjectMode uint32
-	// ContentLength length in bytes for regular files; system-dependent for others
-	ContentLength int64
 }
 
 // GetObjectSystemMetadata will get ObjectSystemMetadata from Object.

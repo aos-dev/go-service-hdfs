@@ -32,14 +32,3 @@ description = "set storage features"
 type = "DefaultStoragePairs"
 description = "set default pairs for storager actions"
 
-[infos.object.meta.content-length]
-type = "int64"
-description = "length in bytes for regular files; system-dependent for others"
-
-[infos.object.meta.ObjectMode]
-type = "uint32"
-description = "file mode bits"
-
-[infos.object.meta.LastModified]
-type = "time.Time"
-description = "modification time"

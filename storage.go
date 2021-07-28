@@ -43,14 +43,14 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 			}
 			for _, f := range dir {
 				o := NewObject(s, true)
-				o.Path = filepath.Base(f.Name())
+				o.Path = f.Name()
 				if f.IsDir() {
 					o.Mode |= ModeDir
 				} else {
 					o.Mode |= ModeRead
 				}
 
-				o.SetContentLength(int64(f.Size()))
+				o.SetContentLength(f.Size())
 				page.Data = append(page.Data, o)
 			}
 			return IterateDone
@@ -108,20 +108,12 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		return
 	}
 
-	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
-		o.Mode |= ModeDir
-	} else {
+	if stat.Mode().IsRegular() {
 		o.Mode |= ModeRead
+		o.SetContentLength(stat.Size())
+		o.SetLastModified(stat.ModTime())
 	}
 
-	o.SetContentLength(stat.Size())
-
-	var sm ObjectSystemMetadata
-
-	sm.ContentLength = stat.Size()
-	sm.ObjectMode = (uint32)(stat.Mode())
-	sm.LastModified = stat.ModTime()
-	o.SetSystemMetadata(sm)
 	return o, nil
 }
 
