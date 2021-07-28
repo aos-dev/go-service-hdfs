@@ -5,18 +5,12 @@ import (
 	"errors"
 	"io"
 	"os"
-	path2 "path"
+	"path/filepath"
 
 	"github.com/beyondstorage/go-storage/v4/pkg/iowrap"
 	"github.com/beyondstorage/go-storage/v4/services"
 	. "github.com/beyondstorage/go-storage/v4/types"
 )
-
-// ref: [hdfs#Client.Stat](https://pkg.go.dev/github.com/colinmarc/hdfs#Client.Stat)
-// Stat returns an os.FileInfo describing the named file or directory.
-// But FileInfo.Size don't return a correct write byte size
-// So here a pointer of type int64 is used for marking
-var Size *int64
 
 func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	rp := s.getAbsPath(path)
@@ -49,7 +43,7 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 			}
 			for _, f := range dir {
 				o := NewObject(s, true)
-				o.Path = s.getFileName(f.Name())
+				o.Path = filepath.Base(f.Name())
 				if f.IsDir() {
 					o.Mode |= ModeDir
 				} else {
@@ -98,7 +92,6 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 }
 
 func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
-
 	rp := s.getAbsPath(path)
 
 	stat, err := s.hdfs.Stat(rp)
@@ -121,73 +114,48 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		o.Mode |= ModeRead
 	}
 
-	o.SetContentLength(*Size)
+	o.SetContentLength(stat.Size())
 
 	var sm ObjectSystemMetadata
 
-	sm.Name = stat.Name()
-	sm.Size = stat.Size()
-	sm.Mode = (uint32)(stat.Mode())
-	sm.ModTime = stat.ModTime()
-	sm.IsDir = stat.IsDir()
-	sm.Sys = stat.Sys()
-
+	sm.ContentLength = stat.Size()
+	sm.ObjectMode = (uint32)(stat.Mode())
+	sm.LastModified = stat.ModTime()
 	o.SetSystemMetadata(sm)
-
 	return o, nil
 }
 
 func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int64, opt pairStorageWrite) (n int64, err error) {
 	rp := s.getAbsPath(path)
-
-	filename := s.getFileName(path)
-
-	dir := path2.Dir(rp)
+	dir := filepath.Dir(rp)
 	err = s.hdfs.MkdirAll(dir, 0666)
 	if err != nil {
 		return 0, err
 	}
-	file := dir + "/" + filename
-
-	var f io.Writer
-
-	_, err = s.hdfs.Stat(file)
-	if os.IsNotExist(err) {
-		filewrite, err := s.hdfs.Create(file)
-		if err != nil {
-			return 0, err
-		}
-		defer filewrite.Close()
-
-		f = filewrite
-		if opt.HasIoCallback {
-			r = iowrap.CallbackReader(r, opt.IoCallback)
-		}
-
-		Size = &size
-		filewrite.Flush()
-		return io.CopyN(f, r, size)
-	} else {
+	_, err = s.hdfs.Stat(rp)
+	if err == nil {
 		err = s.hdfs.Remove(rp)
 		if err != nil && errors.Is(err, os.ErrNotExist) {
 			// Omit `file not exist` error here
 			// ref: [GSP-46](https://github.com/beyondstorage/specs/blob/master/rfcs/46-idempotent-delete.md)
 			err = nil
 		}
-		filewrite, err := s.hdfs.Create(file)
-		if err != nil {
-			return 0, err
-		}
-		defer filewrite.Close()
-		f = filewrite
-		if opt.HasIoCallback {
-			r = iowrap.CallbackReader(r, opt.IoCallback)
-		}
-		if err != nil {
-			return 0, err
-		}
-		Size = &size
-		filewrite.Flush()
-		return io.CopyN(f, r, size)
 	}
+	var f io.Writer
+	filewrite, err := s.hdfs.Create(rp)
+	if err != nil {
+		return 0, err
+	}
+	f = filewrite
+	if opt.HasIoCallback {
+		r = iowrap.CallbackReader(r, opt.IoCallback)
+	}
+
+	n, err = io.CopyN(f, r, size)
+	if err != nil {
+		return 0, err
+	}
+	filewrite.Flush()
+	filewrite.Close()
+	return n, nil
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/beyondstorage/go-endpoint"
 	ps "github.com/beyondstorage/go-storage/v4/pairs"
@@ -25,12 +24,11 @@ type Storage struct {
 	workDir string
 
 	types.UnimplementedStorager
-	types.UnimplementedDirer
 }
 
 // String implements Storager.String
 func (s *Storage) String() string {
-	return fmt.Sprintf("Storager HDFS {WorkDir:%s}", s.workDir)
+	return fmt.Sprintf("Storager hdfs {WorkDir: %s}", s.workDir)
 }
 
 // NewStorager will create Storager only.
@@ -114,13 +112,4 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 
 func (s *Storage) newObject(done bool) *types.Object {
 	return types.NewObject(s, done)
-}
-
-func (s *Storage) getFileName(path string) string {
-	if strings.Contains(path, "/") {
-		tmp := strings.Split(path, "/")
-		return tmp[len(tmp)-1]
-	} else {
-		return path
-	}
 }

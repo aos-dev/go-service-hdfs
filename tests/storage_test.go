@@ -1,9 +1,10 @@
 package tests
 
 import (
-	tests "github.com/beyondstorage/go-integration-test/v4"
 	"os"
 	"testing"
+
+	tests "github.com/beyondstorage/go-integration-test/v4"
 )
 
 func TestStorage(t *testing.T) {

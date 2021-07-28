@@ -32,26 +32,14 @@ description = "set storage features"
 type = "DefaultStoragePairs"
 description = "set default pairs for storager actions"
 
-[infos.object.meta.name]
-type = "string"
-description = "base name of the file"
-
-[infos.object.meta.size]
+[infos.object.meta.content-length]
 type = "int64"
 description = "length in bytes for regular files; system-dependent for others"
 
-[infos.object.meta.mode]
+[infos.object.meta.ObjectMode]
 type = "uint32"
 description = "file mode bits"
 
-[infos.object.meta.ModTime]
+[infos.object.meta.LastModified]
 type = "time.Time"
 description = "modification time"
-
-[infos.object.meta.IsDir]
-type = "bool"
-description = "abbreviation for Mode().IsDir()"
-
-[infos.object.meta.Sys]
-type = "interface{}"
-description = "underlying data source (can return nil)"

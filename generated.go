@@ -6,34 +6,27 @@ import (
 	"io"
 	"time"
 
-	"github.com/beyondstorage/go-storage/v4/pkg/credential"
 	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
 	"github.com/beyondstorage/go-storage/v4/services"
 	. "github.com/beyondstorage/go-storage/v4/types"
 )
 
-var _ credential.Provider
 var _ Storager
 var _ services.ServiceError
 var _ httpclient.Options
+var _ time.Duration
 
 // Type is the type for hdfs
 const Type = "hdfs"
 
 // ObjectSystemMetadata stores system metadata for object.
 type ObjectSystemMetadata struct {
-	// IsDir abbreviation for Mode().IsDir()
-	IsDir bool
-	// ModTime modification time
-	ModTime time.Time
-	// Sys underlying data source (can return nil)
-	Sys interface{}
-	// Mode file mode bits
-	Mode uint32
-	// Name base name of the file
-	Name string
-	// Size length in bytes for regular files; system-dependent for others
-	Size int64
+	// LastModified modification time
+	LastModified time.Time
+	// ObjectMode file mode bits
+	ObjectMode uint32
+	// ContentLength length in bytes for regular files; system-dependent for others
+	ContentLength int64
 }
 
 // GetObjectSystemMetadata will get ObjectSystemMetadata from Object.
@@ -105,7 +98,7 @@ var pairMap = map[string]string{
 	"credential":            "string",
 	"default_storage_pairs": "DefaultStoragePairs",
 	"endpoint":              "string",
-	"expire":                "int",
+	"expire":                "time.Duration",
 	"http_client_options":   "*httpclient.Options",
 	"interceptor":           "Interceptor",
 	"io_callback":           "func([]byte)",

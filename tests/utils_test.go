@@ -1,12 +1,14 @@
 package tests
 
 import (
-	hdfs "github.com/beyondstorage/go-service-hdfs"
+	"os"
+	"testing"
+
 	"github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/types"
 	"github.com/google/uuid"
-	"os"
-	"testing"
+
+	hdfs "github.com/beyondstorage/go-service-hdfs"
 )
 
 func setupTest(t *testing.T) types.Storager {
