@@ -39,9 +39,9 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 		return
 	}
 
-	_,err=s.hdfs.Stat(rp)
+	_, err = s.hdfs.Stat(rp)
 
-	if err==nil {
+	if err == nil {
 		err = s.hdfs.Remove(rp)
 		if err != nil && errors.Is(err, os.ErrNotExist) {
 			// Omit `file not exist` error here
