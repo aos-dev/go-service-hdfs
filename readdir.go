@@ -29,9 +29,6 @@ func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err 
 	}
 
 	n := len(input.fileList)
-	if n <= 0 {
-		return types.IterateDone
-	}
 
 	for i := 0; i < n; i++ {
 		f := input.fileList[i]
@@ -53,6 +50,9 @@ func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err 
 		page.Data = append(page.Data, o)
 		input.continuationToken = o.Path
 		input.counter++
+	}
+	if n <=input.counter {
+		return types.IterateDone
 	}
 	return nil
 }
