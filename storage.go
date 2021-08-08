@@ -93,29 +93,14 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
-	rp := s.getAbsPath(path)
 	if !opt.HasListMode || opt.ListMode.IsDir() {
-		nextFn := func(ctx context.Context, page *ObjectPage) error {
-			dir, err := s.hdfs.ReadDir(rp)
-			if err != nil {
-				return err
-			}
-			for _, f := range dir {
-				o := NewObject(s, true)
-				o.Path = f.Name()
-				if f.IsDir() {
-					o.Mode |= ModeDir
-				} else {
-					o.Mode |= ModeRead
-				}
-
-				o.SetContentLength(f.Size())
-				page.Data = append(page.Data, o)
-			}
-			return IterateDone
+		input := &listDirInput{
+			rp:                s.getAbsPath(path),
+			dir:               filepath.ToSlash(path),
+			continuationToken: opt.ContinuationToken,
+			counter:           0,
 		}
-		oi = NewObjectIterator(ctx, nextFn, nil)
-		return
+		return NewObjectIterator(ctx, s.listDirNext, input), nil
 	} else {
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
