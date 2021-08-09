@@ -29,7 +29,7 @@ func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err 
 	}
 
 	for {
-		fileList,err:=dir.Readdir(100)
+		fileList,err:=dir.Readdir(defaultListObjectLimit)
 
 		if err==io.EOF {
 			break
