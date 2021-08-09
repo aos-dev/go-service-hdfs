@@ -98,7 +98,6 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 			rp:                s.getAbsPath(path),
 			dir:               filepath.ToSlash(path),
 			continuationToken: opt.ContinuationToken,
-			counter:           0,
 		}
 		return NewObjectIterator(ctx, s.listDirNext, input), nil
 	} else {

@@ -2,18 +2,18 @@ package hdfs
 
 import (
 	"context"
+	"io"
+
 	"github.com/beyondstorage/go-storage/v4/types"
-	"os"
 )
+
+const defaultListObjectLimit=100
 
 type listDirInput struct {
 	rp  string
 	dir string
 
-	fileList []os.FileInfo
-
 	continuationToken string
-	counter           int
 }
 
 func (i *listDirInput) ContinuationToken() string {
@@ -23,36 +23,37 @@ func (i *listDirInput) ContinuationToken() string {
 func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err error) {
 	input := page.Status.(*listDirInput)
 
-	input.fileList, err = s.hdfs.ReadDir(input.rp)
-	if err != nil {
+	dir,err:=s.hdfs.Open(input.rp)
+	if err!=nil {
 		return err
 	}
 
-	n := len(input.fileList)
+	for {
+		fileList,err:=dir.Readdir(100)
 
-	for i := 0; i < n; i++ {
-		f := input.fileList[i]
-
-		o := s.newObject(true)
-		o.ID = input.rp
-		o.Path = f.Name()
-
-		if f.Mode().IsDir() {
-			o.Mode |= types.ModeDir
+		if err==io.EOF {
+			break
 		}
 
-		if f.Mode().IsRegular() {
-			o.Mode |= types.ModeRead
+		for i := 0; i < len(fileList); i++ {
+			f := fileList[i]
+
+			o := s.newObject(true)
+			o.ID = input.rp
+			o.Path = f.Name()
+			if f.Mode().IsDir() {
+				o.Mode |= types.ModeDir
+			}
+
+			if f.Mode().IsRegular() {
+				o.Mode |= types.ModeRead
+			}
+
+			o.SetContentLength(f.Size())
+
+			page.Data = append(page.Data, o)
+			input.continuationToken = o.Path
 		}
-
-		o.SetContentLength(f.Size())
-
-		page.Data = append(page.Data, o)
-		input.continuationToken = o.Path
-		input.counter++
 	}
-	if n <=input.counter {
-		return types.IterateDone
-	}
-	return nil
+	return types.IterateDone
 }
