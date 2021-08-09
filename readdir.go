@@ -7,7 +7,7 @@ import (
 	"github.com/beyondstorage/go-storage/v4/types"
 )
 
-const defaultListObjectLimit=100
+const defaultListObjectLimit = 100
 
 type listDirInput struct {
 	rp  string
@@ -23,15 +23,15 @@ func (i *listDirInput) ContinuationToken() string {
 func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err error) {
 	input := page.Status.(*listDirInput)
 
-	dir,err:=s.hdfs.Open(input.rp)
-	if err!=nil {
+	dir, err := s.hdfs.Open(input.rp)
+	if err != nil {
 		return err
 	}
 
 	for {
-		fileList,err:=dir.Readdir(defaultListObjectLimit)
+		fileList, err := dir.Readdir(defaultListObjectLimit)
 
-		if err==io.EOF {
+		if err == io.EOF {
 			break
 		}
 
