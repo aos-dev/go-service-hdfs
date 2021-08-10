@@ -96,7 +96,6 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 	if !opt.HasListMode || opt.ListMode.IsDir() {
 		input := &listDirInput{
 			rp:                s.getAbsPath(path),
-			dir:               filepath.ToSlash(path),
 			continuationToken: opt.ContinuationToken,
 		}
 		return NewObjectIterator(ctx, s.listDirNext, input), nil
@@ -129,7 +128,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	f, err := s.hdfs.Open(rp)
 
 	defer func() {
-		f.Close()
+		err = f.Close()
 	}()
 
 	if err != nil {

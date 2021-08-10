@@ -5,13 +5,15 @@ import (
 	"io"
 
 	"github.com/beyondstorage/go-storage/v4/types"
+
+	"github.com/colinmarc/hdfs/v2"
 )
 
 const defaultListObjectLimit = 100
 
 type listDirInput struct {
 	rp  string
-	dir string
+	dir *hdfs.FileReader
 
 	continuationToken string
 }
@@ -23,18 +25,18 @@ func (i *listDirInput) ContinuationToken() string {
 func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err error) {
 	input := page.Status.(*listDirInput)
 
-	dir, err := s.hdfs.Open(input.rp)
-	if err != nil {
-		return err
+	if input.dir == nil {
+		input.dir, err = s.hdfs.Open(input.rp)
+		if err != nil {
+			return
+		}
 	}
 
-	defer func() {
-		dir.Close()
-	}()
-
-	fileList, err := dir.Readdir(defaultListObjectLimit)
+	fileList, err := input.dir.Readdir(defaultListObjectLimit)
 
 	if err != nil && err == io.EOF {
+		_ = input.dir.Close()
+		input.dir = nil
 		return types.IterateDone
 	}
 
