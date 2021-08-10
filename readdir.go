@@ -34,7 +34,7 @@ func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err 
 
 	fileList, err := dir.Readdir(defaultListObjectLimit)
 
-	if err!=nil && err == io.EOF {
+	if err != nil && err == io.EOF {
 		return types.IterateDone
 	}
 
