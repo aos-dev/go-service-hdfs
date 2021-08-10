@@ -127,6 +127,11 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt pairStor
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
 	rp := s.getAbsPath(path)
 	f, err := s.hdfs.Open(rp)
+
+	defer func() {
+		f.Close()
+	}()
+
 	if err != nil {
 		return 0, err
 	}

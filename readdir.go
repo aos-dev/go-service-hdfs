@@ -28,32 +28,34 @@ func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err 
 		return err
 	}
 
-	for {
-		fileList, err := dir.Readdir(defaultListObjectLimit)
+	defer func() {
+		dir.Close()
+	}()
 
-		if err == io.EOF {
-			break
-		}
+	fileList, err := dir.Readdir(defaultListObjectLimit)
 
-		for i := 0; i < len(fileList); i++ {
-			f := fileList[i]
-
-			o := s.newObject(true)
-			o.ID = input.rp
-			o.Path = f.Name()
-			if f.Mode().IsDir() {
-				o.Mode |= types.ModeDir
-			}
-
-			if f.Mode().IsRegular() {
-				o.Mode |= types.ModeRead
-			}
-
-			o.SetContentLength(f.Size())
-
-			page.Data = append(page.Data, o)
-			input.continuationToken = o.Path
-		}
+	if err!=nil && err == io.EOF {
+		return types.IterateDone
 	}
-	return types.IterateDone
+
+	for _, f := range fileList {
+		o := s.newObject(true)
+		o.ID = input.rp
+		o.Path = f.Name()
+
+		if f.Mode().IsDir() {
+			o.Mode |= types.ModeDir
+		}
+
+		if f.Mode().IsRegular() {
+			o.Mode |= types.ModeRead
+		}
+
+		o.SetContentLength(f.Size())
+
+		page.Data = append(page.Data, o)
+		input.continuationToken = o.Path
+	}
+
+	return
 }
