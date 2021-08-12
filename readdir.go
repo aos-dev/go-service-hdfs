@@ -2,10 +2,10 @@ package hdfs
 
 import (
 	"context"
+	"errors"
 	"io"
 
 	"github.com/beyondstorage/go-storage/v4/types"
-
 	"github.com/colinmarc/hdfs/v2"
 )
 
@@ -34,7 +34,7 @@ func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err 
 
 	fileList, err := input.dir.Readdir(defaultListObjectLimit)
 
-	if err != nil && err == io.EOF {
+	if err != nil && errors.Is(err, io.EOF) {
 		_ = input.dir.Close()
 		input.dir = nil
 		return types.IterateDone

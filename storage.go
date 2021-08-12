@@ -128,7 +128,10 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	f, err := s.hdfs.Open(rp)
 
 	defer func() {
-		err = f.Close()
+		closeErr := f.Close()
+		if err == nil {
+			err = closeErr
+		}
 	}()
 
 	if err != nil {
@@ -199,7 +202,10 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 		return 0, err
 	}
 	defer func() {
-		err = f.Close()
+		closeErr := f.Close()
+		if err == nil {
+			err = closeErr
+		}
 	}()
 
 	if opt.HasIoCallback {
