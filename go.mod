@@ -14,4 +14,5 @@ require (
 	github.com/jcmturner/goidentity v6.0.1+incompatible // indirect
 	github.com/jcmturner/gokrb5 v8.4.2+incompatible // indirect
 	github.com/jcmturner/rpc v1.1.1 // indirect
+	github.com/stretchr/testify v1.7.0 // indirect
 )
