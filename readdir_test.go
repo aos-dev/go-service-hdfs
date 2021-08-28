@@ -27,11 +27,11 @@ func TestHdfsDirerWithFiles(t *testing.T) {
 func testHdfsReaddir(t *testing.T, numbers int) {
 	tmpDir := t.TempDir()
 
-	host:="127.0.0.1"
-	port:=9000
+	host := "127.0.0.1"
+	port := 9000
 
 	s, err := newStorager(
-		ps.WithEndpoint(endpoint.NewTCP(host,port).String()),
+		ps.WithEndpoint(endpoint.NewTCP(host, port).String()),
 		ps.WithWorkDir(tmpDir),
 	)
 

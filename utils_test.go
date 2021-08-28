@@ -5,14 +5,18 @@ import (
 	"os"
 	"testing"
 
+	"github.com/beyondstorage/go-endpoint"
 	ps "github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/services"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewClient(t *testing.T) {
+	host := "127.0.0.1"
+	port := 9000
+
 	c, err := NewStorager(
-		ps.WithEndpoint(os.Getenv("STORAGE_HDFS_ENDPOINT")),
+		ps.WithEndpoint(endpoint.NewTCP(host, port).String()),
 	)
 	assert.NotNil(t, c)
 	assert.NoError(t, err)
