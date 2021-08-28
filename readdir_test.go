@@ -2,8 +2,8 @@ package hdfs
 
 import (
 	"fmt"
+	"github.com/beyondstorage/go-endpoint"
 	"math/rand"
-	"os"
 	"path"
 	"testing"
 
@@ -27,10 +27,14 @@ func TestHdfsDirerWithFiles(t *testing.T) {
 func testHdfsReaddir(t *testing.T, numbers int) {
 	tmpDir := t.TempDir()
 
+	host:="127.0.0.1"
+	port:=9000
+
 	s, err := newStorager(
-		ps.WithEndpoint(os.Getenv("STORAGE_HDFS_ENDPOINT")),
+		ps.WithEndpoint(endpoint.NewTCP(host,port).String()),
 		ps.WithWorkDir(tmpDir),
 	)
+
 	require.NoError(t, err)
 
 	err = s.hdfs.MkdirAll(tmpDir, 0666)
