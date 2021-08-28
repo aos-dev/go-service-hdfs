@@ -37,7 +37,7 @@ jobs:
           hdfs-version: '3.3.1'
 
       - name: Get namenode-addr
-        run: curl ${namenode-addr}
+        run: curl ${{ env.HDFS_NAMENODE_ADDR }}
 
       - name: Build
         run: make build
