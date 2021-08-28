@@ -2,11 +2,11 @@ package hdfs
 
 import (
 	"fmt"
-	"github.com/beyondstorage/go-endpoint"
 	"math/rand"
 	"path"
 	"testing"
 
+	"github.com/beyondstorage/go-endpoint"
 	ps "github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/types"
 	"github.com/google/uuid"
