@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         go: [ "1.15", "1.16" ]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
 
     steps:
       - name: Set up Go 1.x
@@ -36,7 +36,7 @@ jobs:
         with:
           hdfs-version: '3.3.1'
 
-      - name: Get namenode-addr
+      - name: Get namenode addr
         run: curl ${{ env.HDFS_NAMENODE_ADDR }}
 
       - name: Build
