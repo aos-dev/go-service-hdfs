@@ -6,12 +6,9 @@ import (
 	"path"
 	"testing"
 
-	"github.com/beyondstorage/go-endpoint"
-	ps "github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/types"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestHdfsDirerWithFiles(t *testing.T) {
@@ -25,21 +22,11 @@ func TestHdfsDirerWithFiles(t *testing.T) {
 }
 
 func testHdfsReaddir(t *testing.T, numbers int) {
-	tmpDir := t.TempDir()
+	s := NewClient(t)
 
-	host := "127.0.0.1"
-	port := 9000
+	err := s.hdfs.MkdirAll(s.workDir, 0666)
 
-	s, err := newStorager(
-		ps.WithEndpoint(endpoint.NewTCP(host, port).String()),
-		ps.WithWorkDir(tmpDir),
-	)
-
-	require.NoError(t, err)
-
-	err = s.hdfs.MkdirAll(tmpDir, 0666)
-
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	for i := 0; i < numbers; i++ {
 
@@ -47,38 +34,39 @@ func testHdfsReaddir(t *testing.T, numbers int) {
 
 		f, err := s.hdfs.Create(path.Join(s.workDir, filename))
 
-		require.NoError(t, err)
+		assert.NoError(t, err)
+		assert.NotNil(t, f)
 
-		defer func() {
-			closeErr := f.Close()
-			if err == nil {
-				err = closeErr
-			}
-		}()
-
-		require.NoError(t, err)
+		err = f.Close()
+		assert.NoError(t, err)
 	}
 
 	expected := make(map[string]string)
-	fi, err := s.hdfs.ReadDir(tmpDir)
-	require.NoError(t, err)
+	fi, err := s.hdfs.ReadDir(s.workDir)
+	assert.NoError(t, err)
+	assert.NotNil(t, fi)
 
 	for _, v := range fi {
-		expected[v.Name()] = tmpDir
+		expected[v.Name()] = s.workDir
 	}
 
 	actual := make(map[string]string)
 	it, err := s.List(s.workDir)
-	require.NoError(t, err)
+	assert.NoError(t, err)
+	assert.NotNil(t, it)
 
 	for {
 		o, err := it.Next()
+
 		if err == types.IterateDone {
 			break
 		}
+
+		assert.NotNil(t, o)
+
 		_, exist := actual[o.Path]
 		if exist {
-			require.True(t, exist)
+			assert.True(t, exist)
 			return
 		}
 

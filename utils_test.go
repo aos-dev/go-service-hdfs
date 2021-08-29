@@ -9,17 +9,23 @@ import (
 	ps "github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/services"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestNewClient(t *testing.T) {
+func NewClient(t *testing.T) *Storage {
+	tmpDir := t.TempDir()
+
 	host := "127.0.0.1"
 	port := 9000
 
-	c, err := NewStorager(
+	c, err := newStorager(
 		ps.WithEndpoint(endpoint.NewTCP(host, port).String()),
+		ps.WithWorkDir(tmpDir),
 	)
-	assert.NotNil(t, c)
-	assert.NoError(t, err)
+	require.NotNil(t, c)
+	require.NoError(t, err)
+
+	return c
 }
 
 func TestFormatOsError(t *testing.T) {
