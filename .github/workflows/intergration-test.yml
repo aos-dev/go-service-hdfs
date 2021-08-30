@@ -10,6 +10,7 @@ jobs:
     strategy:
       matrix:
         go: [ "1.15", "1.16" ]
+        hdfs: [ "2.10.1", "2.2.2", "3.3.0", "3.3.1"]
         os: [ubuntu-latest]
 
     steps:
@@ -34,10 +35,7 @@ jobs:
       - name: Setup-hdfs env
         uses: beyondstorage/setup-hdfs@master
         with:
-            hdfs-version: '3.3.1'
-
-      - name: Get namenode addr
-        run: curl ${{ env.HDFS_NAMENODE_ADDR }}
+            hdfs-version: ${{ matrix.hdfs }}
 
       - name: Test
         env:
