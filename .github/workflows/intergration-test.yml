@@ -36,6 +36,7 @@ jobs:
         uses: beyondstorage/setup-hdfs@master
         with:
             hdfs-version: ${{ matrix.hdfs }}
+            run_daemon: true
 
       - name: Test
         env:
