@@ -37,7 +37,8 @@ jobs:
         with:
             hdfs-version: ${{ matrix.hdfs }}
 
-      - run: curl ${{ env.HDFS_NAMENODE_ADDR }}
+      - name: Get namenode addr
+        run: curl ${{ env.HDFS_NAMENODE_ADDR }}
 
       - name: Test
         env:
