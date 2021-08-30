@@ -37,6 +37,8 @@ jobs:
         with:
             hdfs-version: ${{ matrix.hdfs }}
 
+      - run: curl ${{ env.HDFS_NAMENODE_ADDR }}
+
       - name: Test
         env:
           STORAGE_HDFS_INTEGRATION_TEST: "on"
