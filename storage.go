@@ -38,28 +38,40 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 	//	If dirname is already a directory,
 	// 	MkdirAll does nothing and returns nil.
 	err = s.hdfs.MkdirAll(dir, 0755)
+	//	IsNotExist will create a Mkdir rpc communication
+	//	So we just need to catch other errors
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
 
 	_, err = s.hdfs.Stat(rp)
 
-	if err != nil && errors.Is(err, os.ErrNotExist) {
-		f, err := s.hdfs.Create(rp)
-
-		if err != nil {
-			return nil, err
-		}
-		defer func() {
-			closeErr := f.Close()
-			if err == nil {
-				err = closeErr
-			}
-		}()
-	}
-
+	//	The error returned by Stat can only be nil or not os.ErrNotExist
 	if err == nil {
 		// If the path does not exist,
 		// RemoveAll returns nil (no error).
 		err = s.hdfs.RemoveAll(rp)
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return nil, err
+		}
 	}
+
+	//	This ensures that err can only be os.ErrNotExist
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
+
+	f, err := s.hdfs.Create(rp)
+
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		closeErr := f.Close()
+		if err == nil {
+			err = closeErr
+		}
+	}()
 
 	o = s.newObject(true)
 	o.ID = rp
@@ -75,6 +87,11 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	//	If dirname is already a directory,
 	// 	MkdirAll does nothing and returns nil.
 	err = s.hdfs.MkdirAll(rp, 0755)
+	//	IsNotExist will create a Mkdir rpc communication
+	//	So we just need to catch other errors
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
 
 	o = s.newObject(true)
 	o.ID = rp
@@ -86,8 +103,9 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete) (err error) {
 	rp := s.getAbsPath(path)
 
-	// If the path does not exist,
-	// RemoveAll returns nil (no error).
+	// 	If the path does not exist,
+	// 	RemoveAll returns nil (no error).
+	//	If there is an error here other than os.ErrNotExist is also thrown directly
 	err = s.hdfs.RemoveAll(rp)
 	return err
 }
@@ -120,12 +138,16 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt pairStor
 			return services.ErrObjectModeInvalid
 		}
 	}
+
 	return s.hdfs.Rename(rs, rd)
 }
 
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
 	rp := s.getAbsPath(path)
 	f, err := s.hdfs.Open(rp)
+	if err != nil {
+		return 0, err
+	}
 
 	defer func() {
 		closeErr := f.Close()
@@ -134,9 +156,6 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 		}
 	}()
 
-	if err != nil {
-		return 0, err
-	}
 	if opt.HasOffset {
 		_, err := f.Seek(opt.Offset, 0)
 		if err != nil {
@@ -190,18 +209,33 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	//	If dirname is already a directory,
 	// 	MkdirAll does nothing and returns nil.
 	err = s.hdfs.MkdirAll(dir, 0755)
+	//	IsNotExist will create a Mkdir rpc communication
+	//	So we just need to catch other errors
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return 0, err
+	}
 
 	_, err = s.hdfs.Stat(rp)
 	if err == nil {
 		// If the path does not exist,
 		// RemoveAll returns nil (no error).
 		err = s.hdfs.RemoveAll(rp)
+
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return 0, err
+		}
+	}
+
+	//	This ensures that err can only be os.ErrNotExist
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return 0, err
 	}
 
 	f, err := s.hdfs.Create(rp)
 	if err != nil {
 		return 0, err
 	}
+
 	defer func() {
 		closeErr := f.Close()
 		if err == nil {
@@ -222,6 +256,7 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 	if err != nil {
 		return
 	}
+
 	defer func() {
 		closeErr := f.Close()
 		if err == nil {
