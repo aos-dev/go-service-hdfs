@@ -38,9 +38,9 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 	//	If dirname is already a directory,
 	// 	MkdirAll does nothing and returns nil.
 	err = s.hdfs.MkdirAll(dir, 0755)
-	//	IsNotExist will create a Mkdir rpc communication
+	//	If dirname is not exist ,it will create a Mkdir rpc communication
 	//	So we just need to catch other errors
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err != nil {
 		return nil, err
 	}
 
@@ -51,7 +51,7 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 		// If the path does not exist,
 		// RemoveAll returns nil (no error).
 		err = s.hdfs.RemoveAll(rp)
-		if err != nil && !errors.Is(err, os.ErrNotExist) {
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -87,9 +87,9 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	//	If dirname is already a directory,
 	// 	MkdirAll does nothing and returns nil.
 	err = s.hdfs.MkdirAll(rp, 0755)
-	//	IsNotExist will create a Mkdir rpc communication
+	//	If dirname is not exist ,it will create a Mkdir rpc communication
 	//	So we just need to catch other errors
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err != nil {
 		return nil, err
 	}
 
@@ -209,9 +209,9 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	//	If dirname is already a directory,
 	// 	MkdirAll does nothing and returns nil.
 	err = s.hdfs.MkdirAll(dir, 0755)
-	//	IsNotExist will create a Mkdir rpc communication
+	//	If dirname is not exist ,it will create a Mkdir rpc communication
 	//	So we just need to catch other errors
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err != nil {
 		return 0, err
 	}
 
@@ -221,7 +221,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 		// RemoveAll returns nil (no error).
 		err = s.hdfs.RemoveAll(rp)
 
-		if err != nil && !errors.Is(err, os.ErrNotExist) {
+		if err != nil {
 			return 0, err
 		}
 	}
