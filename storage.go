@@ -34,29 +34,32 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
 	rp := s.getAbsPath(path)
 	dir := filepath.Dir(rp)
-	err = s.hdfs.MkdirAll(dir, 0666)
-	if err != nil {
-		return
-	}
+
+	//	If dirname is already a directory,
+	// 	MkdirAll does nothing and returns nil.
+	err = s.hdfs.MkdirAll(dir, 0755)
 
 	_, err = s.hdfs.Stat(rp)
 
-	if err == nil {
-		err = s.hdfs.Remove(rp)
-		if err != nil && errors.Is(err, os.ErrNotExist) {
-			// Omit `file not exist` error here
-			// ref: [GSP-46](https://github.com/beyondstorage/specs/blob/master/rfcs/46-idempotent-delete.md)
-			err = nil
+	if err != nil && errors.Is(err, os.ErrNotExist) {
+		f, err := s.hdfs.Create(rp)
+
+		if err != nil {
+			return nil, err
 		}
+		defer func() {
+			closeErr := f.Close()
+			if err == nil {
+				err = closeErr
+			}
+		}()
 	}
 
-	f, err := s.hdfs.Create(rp)
-	if err != nil {
-		return
+	if err == nil {
+		// If the path does not exist,
+		// RemoveAll returns nil (no error).
+		err = s.hdfs.RemoveAll(rp)
 	}
-	defer func() {
-		f.Close()
-	}()
 
 	o = s.newObject(true)
 	o.ID = rp
@@ -69,10 +72,9 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
 	rp := s.getAbsPath(path)
 
+	//	If dirname is already a directory,
+	// 	MkdirAll does nothing and returns nil.
 	err = s.hdfs.MkdirAll(rp, 0755)
-	if err != nil {
-		return
-	}
 
 	o = s.newObject(true)
 	o.ID = rp
@@ -83,12 +85,10 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 
 func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete) (err error) {
 	rp := s.getAbsPath(path)
-	err = s.hdfs.Remove(rp)
-	if err != nil && errors.Is(err, os.ErrNotExist) {
-		// Omit `file not exist` error here
-		// ref: [GSP-46](https://github.com/beyondstorage/specs/blob/master/rfcs/46-idempotent-delete.md)
-		err = nil
-	}
+
+	// If the path does not exist,
+	// RemoveAll returns nil (no error).
+	err = s.hdfs.RemoveAll(rp)
 	return err
 }
 
@@ -186,18 +186,16 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int64, opt pairStorageWrite) (n int64, err error) {
 	rp := s.getAbsPath(path)
 	dir := filepath.Dir(rp)
-	err = s.hdfs.MkdirAll(dir, 0666)
-	if err != nil {
-		return 0, err
-	}
+
+	//	If dirname is already a directory,
+	// 	MkdirAll does nothing and returns nil.
+	err = s.hdfs.MkdirAll(dir, 0755)
+
 	_, err = s.hdfs.Stat(rp)
 	if err == nil {
-		err = s.hdfs.Remove(rp)
-		if err != nil && errors.Is(err, os.ErrNotExist) {
-			// Omit `file not exist` error here
-			// ref: [GSP-46](https://github.com/beyondstorage/specs/blob/master/rfcs/46-idempotent-delete.md)
-			err = nil
-		}
+		// If the path does not exist,
+		// RemoveAll returns nil (no error).
+		err = s.hdfs.RemoveAll(rp)
 	}
 
 	f, err := s.hdfs.Create(rp)
@@ -220,11 +218,15 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 
 func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
 	f, err := s.hdfs.Append(o.ID)
+
 	if err != nil {
 		return
 	}
 	defer func() {
-		f.Close()
+		closeErr := f.Close()
+		if err == nil {
+			err = closeErr
+		}
 	}()
 
 	return io.CopyN(f, r, size)
