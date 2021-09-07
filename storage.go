@@ -104,10 +104,13 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete) (err error) {
 	rp := s.getAbsPath(path)
 
-	// 	If the path does not exist,
-	// 	RemoveAll returns nil (no error).
-	//	If there is an error here other than os.ErrNotExist is also thrown directly
-	err = s.hdfs.RemoveAll(rp)
+	err = s.hdfs.Remove(rp)
+	if err != nil && errors.Is(err, os.ErrNotExist) {
+		// Omit `file not exist` error here
+		// ref: [GSP-46](https://github.com/beyondstorage/specs/blob/master/rfcs/46-idempotent-delete.md)
+		err = nil
+	}
+	
 	return err
 }
 
