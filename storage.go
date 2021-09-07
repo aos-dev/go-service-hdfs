@@ -48,11 +48,12 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 
 	//	The error returned by Stat can only be nil or not os.ErrNotExist
 	if err == nil {
-		// If the path does not exist,
-		// RemoveAll returns nil (no error).
-		err = s.hdfs.RemoveAll(rp)
-		if err != nil {
-			return nil, err
+		//	If the error returned by Stat is nil, the path must exist.
+		err = s.hdfs.Remove(rp)
+		if err != nil && errors.Is(err, os.ErrNotExist) {
+			// Omit `file not exist` error here
+			// ref: [GSP-46](https://github.com/beyondstorage/specs/blob/master/rfcs/46-idempotent-delete.md)
+			err = nil
 		}
 	}
 
@@ -217,12 +218,13 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 
 	_, err = s.hdfs.Stat(rp)
 	if err == nil {
-		// If the path does not exist,
-		// RemoveAll returns nil (no error).
-		err = s.hdfs.RemoveAll(rp)
+		//	If the error returned by Stat is nil, the path must exist.
+		err = s.hdfs.Remove(rp)
 
-		if err != nil {
-			return 0, err
+		if err != nil && errors.Is(err, os.ErrNotExist) {
+			// Omit `file not exist` error here
+			// ref: [GSP-46](https://github.com/beyondstorage/specs/blob/master/rfcs/46-idempotent-delete.md)
+			err = nil
 		}
 	}
 
